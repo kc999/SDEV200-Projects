@@ -9,7 +9,6 @@ public class assingment1014{
          System.out.println("The date is... " + date1.getMonth() + "/" + date1.getDay() + "/" + date1.getYear());
          myDate date2 = new myDate(34355555133101L);
          System.out.println("The new date is " + date2.getMonth() + "/" + date2.getDay() + "/" + date2.getYear());
-         System.out.println(date2);
     }
     
     }
