@@ -1,0 +1,6 @@
+public class assignment2011 {
+    public static void main(String[] args)
+    {
+        Syste.out.println("Test");
+    }
+}
