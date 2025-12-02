@@ -9,11 +9,15 @@ public class UPCUtil {
     
     public static void main(String[] args) 
     {
+        //Create the Database
         UPCDatabase upcDatabase = new UPCDatabase();
+        //Create Test items
         perishableItem testItem = new perishableItem(Integer.toString(100),LocalDate.now(),Integer.toString(0));
         perishableItem testItem2 = new perishableItem(Integer.toString(150), LocalDate.of(2026,6,24), Integer.toString(0));
+        //Add items to database
         upcDatabase.addItem(testItem);
         upcDatabase.addItem(testItem2);
+        //Print items currently in the DB
         upcDatabase.printAll();
     }
 }
