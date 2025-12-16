@@ -8,7 +8,8 @@
     <h2>Loan Calculator</h2>
     <form action="loan" method="POST">
         <input type="number" name="loanAmt" required placeholder="Loan Amount">
-        <input type="number" step=".01" name="interestRate" required placeholder="Annual Interest Rate">
+        <input type="number" step=".01
+        " name="interestRate" required placeholder="Annual Interest Rate">
         <input type="number" name="years" required placeholder="Number of Years">
        <button type="submit"> calculate</button>
        <hr/>
