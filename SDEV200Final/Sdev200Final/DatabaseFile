@@ -4,34 +4,43 @@
     "expiryDates" : [ [ 2026, 12, 25 ], [ 2026, 12, 28 ] ],
     "itemName" : "Donettes",
     "itemLocation" : "Z-43",
-    "itemType" : null,
+    "itemType" : "Pastry",
     "addedBy" : "Kyle",
     "itemManufacturer" : "Hostess"
+  },
+  "789324897" : {
+    "upc" : "789324897",
+    "expiryDates" : [ [ 2025, 12, 30 ] ],
+    "itemName" : "M&M's",
+    "itemLocation" : "Z-23",
+    "itemType" : "Candy",
+    "addedBy" : "Kyle",
+    "itemManufacturer" : "Mars"
   },
   "874294782" : {
     "upc" : "874294782",
     "expiryDates" : [ [ 2026, 12, 25 ] ],
     "itemName" : "Doritos Nacho Cheese",
     "itemLocation" : "Z-34",
-    "itemType" : null,
+    "itemType" : "Chips",
     "addedBy" : "Kyle",
     "itemManufacturer" : "Frito Lay"
   },
-  "10010101" : {
-    "upc" : "10010101",
-    "expiryDates" : [ [ 2026, 12, 25 ] ],
-    "itemName" : "Test Item",
-    "itemLocation" : null,
-    "itemType" : "Test Type",
-    "addedBy" : null,
-    "itemManufacturer" : "Test Manufacturer"
+  "90859554" : {
+    "upc" : "90859554",
+    "expiryDates" : [ [ 2026, 12, 31 ], [ 2026, 12, 25 ] ],
+    "itemName" : "Peanut Butter Cups",
+    "itemLocation" : "Z-34",
+    "itemType" : "Candy",
+    "addedBy" : "Kyle",
+    "itemManufacturer" : "Reese's"
   },
   "784378374" : {
     "upc" : "784378374",
-    "expiryDates" : [ ],
+    "expiryDates" : [ [ 2025, 12, 30 ], [ 2026, 1, 15 ], [ 2026, 3, 5 ] ],
     "itemName" : "Cheetos",
-    "itemLocation" : "z-23-2",
-    "itemType" : null,
+    "itemLocation" : "Z-23-2",
+    "itemType" : "Chips",
     "addedBy" : "Kyle",
     "itemManufacturer" : "Frito Lay"
   },
@@ -40,7 +49,7 @@
     "expiryDates" : [ [ 2027, 12, 23 ] ],
     "itemName" : "Another Test Item",
     "itemLocation" : "Z-45",
-    "itemType" : null,
+    "itemType" : "Test Item",
     "addedBy" : "Bob Teston",
     "itemManufacturer" : "Test Company"
   }

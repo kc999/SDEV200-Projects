@@ -23,6 +23,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ListView;
 import java.time.LocalDate;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ScrollPane;
+
 public class App extends Application {
     //Create labels for use later
     TextField upcTextField = new TextField();
@@ -33,8 +39,12 @@ public class App extends Application {
     TextField itemAddedByTextField = new TextField();
     TextField expiryDatesTextfield = new TextField();
     Label alertsLabel = new Label();
+    Label expiryLabel = new Label();
     ListView<perishableItem> dbListView;
     ObservableList<perishableItem> itemList;
+    VBox alertsBox;
+    //How many weeks to check for in the future for expiration dates
+    private int weeksToCheckFor = 4;
 
     UPCDatabase upcDB = upcDatabaseInit("db");
     @Override
@@ -53,7 +63,19 @@ public class App extends Application {
         tBox.setHgrow(topRightVbox, Priority.ALWAYS);
         tBox.setHgrow(topLeftVbox, Priority.ALWAYS);
         tBox.getChildren().addAll(topLeftVbox,topRightVbox);
-        Scene primScene = new Scene(tBox,600,600);
+        //Creates the bottom part that shows items close to Expiry
+        alertsBox = alertsBoxInit();
+        ScrollPane scrollableAlert = new ScrollPane();
+        scrollableAlert.setContent(alertsBox);
+        scrollableAlert.setHbarPolicy(ScrollBarPolicy.NEVER);
+        scrollableAlert.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollableAlert.setPrefHeight(200);
+        scrollableAlert.setFitToWidth(true);
+        refreshAlertsBox(alertsBox);
+        //This vbox contains both the top hbox, and the bottom vbox.
+        VBox masterBox = new VBox();
+        masterBox.getChildren().addAll(tBox,scrollableAlert);
+        Scene primScene = new Scene(masterBox,600,500);
         primaryStage.setTitle("UPCApp");
         primaryStage.setScene(primScene);
         primaryStage.show();
@@ -86,11 +108,10 @@ public class App extends Application {
         lab.setMaxWidth(Double.MAX_VALUE);
         return lab;
     }
-    public static ListView<perishableItem> initDbListView(UPCDatabase dataB)
+    public ListView<perishableItem> initDbListView(UPCDatabase dataB)
     {
-        ObservableList<perishableItem> itemsList = dataB.getListViewData();
-        ListView<perishableItem> listItems = new ListView<>(itemsList);
-        return listItems;
+        this.itemList = dataB.getListViewData();
+        return new ListView<>(this.itemList);
     }
     public static VBox initVBox()
     {
@@ -158,7 +179,7 @@ public class App extends Application {
     {
         HBox tBox = new HBox();
         tBox.setMaxHeight(175);
-        tBox.setMaxWidth(400);
+        tBox.setMaxWidth(Double.MAX_VALUE);
         tBox.setSpacing(20);
         return tBox;
     }
@@ -215,7 +236,7 @@ public class App extends Application {
         VBox topRight = new VBox();
         topRight.setMaxWidth(Double.MAX_VALUE);
         topRight.setFillWidth(true);
-        topRight.getChildren().addAll(infoLabel,upcGrid);
+        topRight.getChildren().addAll(infoLabel,upcGrid,alertsLabel);
         return topRight;
     }
     private void saveButtonUpdate()
@@ -231,6 +252,8 @@ public class App extends Application {
             selectedItem.setItemManufacturer(itemManufacturerTextField.getText());
             splitTextFieldDates(selectedItem);
             upcDB.saveDatabase("DatabaseFile");
+            refreshAlertsBox(alertsBox);
+            dbListView.refresh();
         }
     }
     //This takes the dates in the text field, splits them, and creates a date object to add to the UPC database
@@ -238,7 +261,7 @@ public class App extends Application {
     {
         String input = expiryDatesTextfield.getText();
         String[] dateStrings = input.split(",\\s*");
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("M/d/yyyy");
         item.getExpiryDates().clear();
         for (String date : dateStrings)
         {
@@ -269,7 +292,7 @@ public class App extends Application {
                 itemTypeTextField.setText(newVal.getItemType());
                 itemAddedByTextField.setText(newVal.getAddedBy());
                 String expireDates = newVal.getExpiryDates().stream()
-                    .map(date -> date.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")))
+                    .map(date -> date.format(DateTimeFormatter.ofPattern("M/d/yyyy")))
                     .collect(Collectors.joining(", "));
                 expiryDatesTextfield.setText(expireDates);
             }
@@ -316,12 +339,73 @@ public class App extends Application {
             addAndSave(itemAdd, upcDB, "DatabaseFile");
             itemList.add(itemAdd);
             alertsLabel.setText("Item added successfully");
+            refreshAlertsBox(alertsBox);
             clearTextFields();
         }
 
     }
     private void deleteItemButton()
     {
+        perishableItem deleteItem = dbListView.getSelectionModel().getSelectedItem();
+        if (deleteItem == null)
+        {
+            alertsLabel.setText("Please select an item!");
+        }
+        else{
+            Alert delAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            delAlert.setTitle("Are you sure?");
+            delAlert.setHeaderText("Deleting item: " + deleteItem);
+            delAlert.setContentText("Are you sure you want to delete this item? This can't be undone.");
+            
+            delAlert.showAndWait().ifPresent(resp ->
+                {
+                    if (resp == ButtonType.OK)
+                    {
+                        //Remove from listview
+                        itemList.remove(deleteItem);
+                        //Remove from DB
+                        upcDB.db.remove(deleteItem.getUpc());
+                        alertsLabel.setText("Item successfully removed.");
+                        clearTextFields();
+                        refreshAlertsBox(alertsBox);
+                        upcDB.saveDatabase("DatabaseFile");
+                    }
 
+                }
+            );
+        }
     }
+    private VBox alertsBoxInit()
+    {
+        VBox alertsBox = new VBox();
+        alertsBox.setPadding(new Insets(20,10,20,10));
+        return alertsBox;
+    }
+    private void refreshAlertsBox(VBox alertsBox)
+    {
+        //Clear the vbox before adding stuff to it
+        alertsBox.getChildren().clear();
+        //Create dates to compare toi
+        LocalDate today = LocalDate.now();
+        LocalDate weeksToCheckForFromToday = today.plusWeeks(weeksToCheckFor);
+        //Create a header label 
+        Label expiryLabelInfo = new Label("Items close to Expiration Date");
+        expiryLabelInfo.setFont(new Font("Garamond", 20));
+        alertsBox.getChildren().add(expiryLabelInfo);
+
+        //Loop through the database and look for any items close to the expiry date
+        for (perishableItem item: upcDB.db.values())
+        {
+            for (LocalDate expiry: item.getExpiryDates())
+            {
+                if (expiry.isEqual(today) || expiry.isAfter(today) && expiry.isBefore(weeksToCheckForFromToday))
+                {
+                    String alertText = String.format("%s (Expires: %s)", item.getItemName(),expiry.format(DateTimeFormatter.ofPattern("M/d/yyyy")));
+                    Label dateAlertLabel = new Label(alertText);
+                    alertsBox.getChildren().add(dateAlertLabel);
+                }
+            }
+        }
+    }
+
 }   
