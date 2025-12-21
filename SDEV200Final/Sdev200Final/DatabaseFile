@@ -1,1 +1,47 @@
-{ }
+{
+  "7823479834" : {
+    "upc" : "7823479834",
+    "expiryDates" : [ [ 2026, 12, 25 ], [ 2026, 12, 28 ] ],
+    "itemName" : "Donettes",
+    "itemLocation" : "Z-43",
+    "itemType" : null,
+    "addedBy" : "Kyle",
+    "itemManufacturer" : "Hostess"
+  },
+  "874294782" : {
+    "upc" : "874294782",
+    "expiryDates" : [ [ 2026, 12, 25 ] ],
+    "itemName" : "Doritos Nacho Cheese",
+    "itemLocation" : "Z-34",
+    "itemType" : null,
+    "addedBy" : "Kyle",
+    "itemManufacturer" : "Frito Lay"
+  },
+  "10010101" : {
+    "upc" : "10010101",
+    "expiryDates" : [ [ 2026, 12, 25 ] ],
+    "itemName" : "Test Item",
+    "itemLocation" : null,
+    "itemType" : "Test Type",
+    "addedBy" : null,
+    "itemManufacturer" : "Test Manufacturer"
+  },
+  "784378374" : {
+    "upc" : "784378374",
+    "expiryDates" : [ ],
+    "itemName" : "Cheetos",
+    "itemLocation" : "z-23-2",
+    "itemType" : null,
+    "addedBy" : "Kyle",
+    "itemManufacturer" : "Frito Lay"
+  },
+  "839849392084" : {
+    "upc" : "839849392084",
+    "expiryDates" : [ [ 2027, 12, 23 ] ],
+    "itemName" : "Another Test Item",
+    "itemLocation" : "Z-45",
+    "itemType" : null,
+    "addedBy" : "Bob Teston",
+    "itemManufacturer" : "Test Company"
+  }
+}

@@ -1,4 +1,7 @@
+import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 import com.SDEV200Final.utility.UPCDatabase;
 import com.SDEV200Final.utility.perishableItem;
@@ -6,49 +9,50 @@ import javafx.scene.text.Font;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ListView;
 import java.time.LocalDate;
 public class App extends Application {
+    //Create labels for use later
+    TextField upcTextField = new TextField();
+    TextField itemNameTextField = new TextField();
+    TextField itemLocationTextField = new TextField();
+    TextField itemTypeTextField = new TextField();
+    TextField itemManufacturerTextField = new TextField();
+    TextField itemAddedByTextField = new TextField();
+    TextField expiryDatesTextfield = new TextField();
+    Label alertsLabel = new Label();
+    ListView<perishableItem> dbListView;
+    ObservableList<perishableItem> itemList;
+
+    UPCDatabase upcDB = upcDatabaseInit("db");
     @Override
     public void start(Stage primaryStage)
     {
-        //Create the database we will be using
-        UPCDatabase upcDB = upcDatabaseInit("db");
+        //Load info in to the database 
         upcDB.loadDatabase("DatabaseFile");
-        perishableItem testItem = new perishableItem("10010101",LocalDate.of(2026,12,25),"Test");
-        //Create the Vbox used in the database
-        VBox listAreaBox = initVBox();
-        Label listAreaLabel = initDbListViewLabel();
-        ListView<String> dbListView = initDbListView(upcDB);
-        listAreaBox.getChildren().addAll(listAreaLabel,dbListView);
+        //Create the left side with the list view
+        VBox topLeftVbox = topLeftVboxInit(upcDB);
         //Create the right side of the top of the screen
-        VBox infoVBox = infoVbox();
-        Label infoBoxLabel = infoBoxLabel();
-        Label infoUpcLabel = infoUpcLabel();
-        Label infoNameLabel = infoNameLabel();
-        Label infoLocationLabel = infoItemLocation();
-        Label infoItemTypeLabel = infoItemType();
-        Label infoManufacLabel = infoItemManufacturer();
-        Label infoAddedByLabel = infoAddedBy();
-        Label infoDatesLabel = infoDates();
-        infoVBox.getChildren().addAll(infoBoxLabel, infoUpcLabel,infoNameLabel,infoLocationLabel,infoItemTypeLabel,infoManufacLabel,infoAddedByLabel,infoDatesLabel);
+        VBox topRightVbox = upcEditorVbox();
+        //Create the event listener that feeds info to the info box from the listview
+        listViewListenerInit();
         //Put the top side in an HBOX
         HBox tBox = topBox();
-        tBox.setHgrow(infoVBox, Priority.ALWAYS);
-        tBox.setHgrow(listAreaBox, Priority.ALWAYS);
-        infoVBox.setMaxWidth(Double.MAX_VALUE);
-        listAreaBox.setMaxWidth(Double.MAX_VALUE);
-        infoVBox.setFillWidth(true);
-        listAreaBox.setFillWidth(true);
-        tBox.getChildren().addAll(listAreaBox,infoVBox);
+        tBox.setHgrow(topRightVbox, Priority.ALWAYS);
+        tBox.setHgrow(topLeftVbox, Priority.ALWAYS);
+        tBox.getChildren().addAll(topLeftVbox,topRightVbox);
         Scene primScene = new Scene(tBox,600,600);
         primaryStage.setTitle("UPCApp");
         primaryStage.setScene(primScene);
@@ -72,6 +76,7 @@ public class App extends Application {
         upcDatabase.addItem(item);
         upcDatabase.saveDatabase(Filename);
         System.out.println("Item successfully saved to the database.");
+
     }
     public static Label initDbListViewLabel()
     {
@@ -81,11 +86,10 @@ public class App extends Application {
         lab.setMaxWidth(Double.MAX_VALUE);
         return lab;
     }
-    public static ListView<String> initDbListView(UPCDatabase dataB)
+    public static ListView<perishableItem> initDbListView(UPCDatabase dataB)
     {
-        ListView<String> listItems = new ListView<>();
-        ObservableList<String> items = dataB.getListViewData();
-        listItems.setItems(items);
+        ObservableList<perishableItem> itemsList = dataB.getListViewData();
+        ListView<perishableItem> listItems = new ListView<>(itemsList);
         return listItems;
     }
     public static VBox initVBox()
@@ -158,4 +162,166 @@ public class App extends Application {
         tBox.setSpacing(20);
         return tBox;
     }
-}
+    //Create top left vbox that will store the list of all items
+    public VBox topLeftVboxInit(UPCDatabase upcDBN)
+    {
+        //Create the Vbox used in the database
+        VBox listAreaBox = initVBox();
+        Label listAreaLabel = initDbListViewLabel();
+        //Create List view in 
+        dbListView = initDbListView(upcDBN);
+        listAreaBox.getChildren().addAll(listAreaLabel,dbListView);
+        listAreaBox.setMaxWidth(Double.MAX_VALUE);
+        listAreaBox.setFillWidth(true);
+        return listAreaBox;
+    }
+    //Creates the top right of the screen where UPCs are edited and viewed
+    public VBox upcEditorVbox()
+    {
+        GridPane upcGrid = new GridPane();
+        upcGrid.setHgap(5);
+        upcGrid.setVgap(5);
+        //Add labels and input fields to gridpane
+        upcGrid.add(new Label("UPC:"),0, 0 );
+        upcGrid.add(upcTextField,1,0);
+        upcGrid.add(new Label("Name:"),0,1);
+        upcGrid.add(itemNameTextField,1,1);
+        upcGrid.add(new Label("Type:"),0,2);
+        upcGrid.add(itemTypeTextField,1,2);
+        upcGrid.add(new Label("Location:"),0,3);
+        upcGrid.add(itemLocationTextField,1,3);
+        upcGrid.add(new Label("Manufacturer:"),0,4);
+        upcGrid.add(itemManufacturerTextField,1,4);
+        upcGrid.add(new Label("Added By:"),0,5);
+        upcGrid.add(itemAddedByTextField,1,5);
+        upcGrid.add(new Label("Expiry Dates"),0,6);
+        upcGrid.add(expiryDatesTextfield,1,6);
+        HBox buttons = new HBox();
+        Button saveBtn = new Button("Update Item");
+        saveBtn.setOnAction(e->saveButtonUpdate());
+        saveBtn.setMaxWidth(Double.MAX_VALUE);
+        Button addItemBtn = new Button("Add Item");
+        addItemBtn.setMaxWidth(Double.MAX_VALUE);
+        addItemBtn.setOnAction(e->addItemButton());
+        Button deleteButton = new Button("Delete");
+        deleteButton.setOnAction(e->deleteItemButton());
+        deleteButton.setMaxWidth(Double.MAX_VALUE);
+        buttons.getChildren().addAll(saveBtn,addItemBtn,deleteButton);
+        buttons.setHgrow(saveBtn, Priority.ALWAYS);
+        buttons.setHgrow(addItemBtn, Priority.ALWAYS);
+        buttons.setHgrow(deleteButton, Priority.ALWAYS);
+        upcGrid.add(buttons,0,7,2,1);
+        Label infoLabel = new Label("UPC Information");
+        VBox topRight = new VBox();
+        topRight.setMaxWidth(Double.MAX_VALUE);
+        topRight.setFillWidth(true);
+        topRight.getChildren().addAll(infoLabel,upcGrid);
+        return topRight;
+    }
+    private void saveButtonUpdate()
+    {
+        perishableItem selectedItem = dbListView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && upcTextField.getText() != null)
+        {
+            selectedItem.setItemName(itemNameTextField.getText());
+            selectedItem.setUpc(upcTextField.getText());
+            selectedItem.setAddedBy(itemAddedByTextField.getText());
+            selectedItem.setItemLocation(itemLocationTextField.getText());
+            selectedItem.setItemType(itemTypeTextField.getText());
+            selectedItem.setItemManufacturer(itemManufacturerTextField.getText());
+            splitTextFieldDates(selectedItem);
+            upcDB.saveDatabase("DatabaseFile");
+        }
+    }
+    //This takes the dates in the text field, splits them, and creates a date object to add to the UPC database
+    private void splitTextFieldDates(perishableItem item)
+    {
+        String input = expiryDatesTextfield.getText();
+        String[] dateStrings = input.split(",\\s*");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        item.getExpiryDates().clear();
+        for (String date : dateStrings)
+        {
+            try{
+                if (!date.isEmpty())
+                {
+                    LocalDate newDate = LocalDate.parse(date,dateFormat);
+                    item.getExpiryDates().add(newDate);
+                }
+            }
+            catch(DateTimeException e)
+            {
+                System.out.println ("Invalid Date Format");
+                alertsLabel.setText("Invalid Date Format");
+            }
+        }
+    }
+    //Create the listener function that will grab info from the item selected in the list view, and populate the textfields
+    private void listViewListenerInit()
+    {
+        dbListView.getSelectionModel().selectedItemProperty().addListener((observable,oldVal,newVal)->{
+            if (newVal != null)
+            {
+                itemNameTextField.setText(newVal.getItemName());
+                upcTextField.setText(newVal.getUpc());
+                itemManufacturerTextField.setText(newVal.getItemManufacturer());
+                itemLocationTextField.setText(newVal.getItemLocation());
+                itemTypeTextField.setText(newVal.getItemType());
+                itemAddedByTextField.setText(newVal.getAddedBy());
+                String expireDates = newVal.getExpiryDates().stream()
+                    .map(date -> date.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")))
+                    .collect(Collectors.joining(", "));
+                expiryDatesTextfield.setText(expireDates);
+            }
+            else
+            {
+                //If a value isnt selected, clear the fields
+                clearTextFields();
+            }
+        });
+    }
+    private void clearTextFields()
+    {
+        itemNameTextField.clear();
+        upcTextField.clear();
+        itemManufacturerTextField.clear();
+        itemLocationTextField.clear();
+        itemTypeTextField.clear();
+        itemAddedByTextField.clear();
+        expiryDatesTextfield.clear();
+    }
+    private void addItemButton()
+    {
+        //Get the UPC to check the DB
+        String upcToAdd = upcTextField.getText();
+        if (upcToAdd.isEmpty())
+        {
+            alertsLabel.setText("The Upc field is empty. Please add a UPC.");
+            return;
+        }
+        //Make sure UPC isn't already in DB
+        if (upcDB.db.containsKey(upcToAdd))
+        {
+            alertsLabel.setText("This Upc is already in the database. You can use Update to change fields.");
+            return;
+        }
+        else{
+            perishableItem itemAdd = new perishableItem();
+            itemAdd.setUpc(upcTextField.getText());
+            itemAdd.setAddedBy(itemAddedByTextField.getText());
+            itemAdd.setItemLocation(itemLocationTextField.getText());
+            itemAdd.setItemManufacturer(itemManufacturerTextField.getText());
+            itemAdd.setItemName(itemNameTextField.getText());
+            splitTextFieldDates(itemAdd);
+            addAndSave(itemAdd, upcDB, "DatabaseFile");
+            itemList.add(itemAdd);
+            alertsLabel.setText("Item added successfully");
+            clearTextFields();
+        }
+
+    }
+    private void deleteItemButton()
+    {
+
+    }
+}   
