@@ -252,6 +252,7 @@ public class App extends Application {
             selectedItem.setItemManufacturer(itemManufacturerTextField.getText());
             splitTextFieldDates(selectedItem);
             upcDB.saveDatabase("DatabaseFile");
+            alertsLabel.setText("Item Updated!");
             refreshAlertsBox(alertsBox);
             dbListView.refresh();
         }

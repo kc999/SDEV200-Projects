@@ -37,7 +37,7 @@
   },
   "784378374" : {
     "upc" : "784378374",
-    "expiryDates" : [ [ 2025, 12, 30 ], [ 2026, 1, 15 ], [ 2026, 3, 5 ] ],
+    "expiryDates" : [ [ 2026, 3, 24 ] ],
     "itemName" : "Cheetos",
     "itemLocation" : "Z-23-2",
     "itemType" : "Chips",
